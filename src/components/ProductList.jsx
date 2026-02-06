@@ -10,6 +10,7 @@ function ProductList() {
         isStock: true
     });
     const [adding, setAdding] = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
         fetch('https://68dd1a2f7cd1948060ac69a9.mockapi.io/product')
@@ -47,6 +48,45 @@ function ProductList() {
             });
     };
 
+    const handleUpdateProduct = (e) => {
+        e.preventDefault();
+        setAdding(true);
+
+        fetch(`https://68dd1a2f7cd1948060ac69a9.mockapi.io/product/${editingId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newProduct)
+        })
+            .then(response => response.json())
+            .then(data => {
+                setProducts(products.map(p => p.id === editingId ? data : p));
+                setNewProduct({ name: '', description: '', quantity: 0, isStock: true });
+                setEditingId(null);
+                setAdding(false);
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                setAdding(false);
+            });
+    };
+
+    const handleEditClick = (product) => {
+        setEditingId(product.id);
+        setNewProduct({
+            name: product.name,
+            description: product.description,
+            quantity: product.quantity,
+            isStock: product.isStock
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setNewProduct({ name: '', description: '', quantity: 0, isStock: true });
+    };
+
     if (loading) {
         return (
             <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px', textAlign: 'center' }}>
@@ -59,14 +99,16 @@ function ProductList() {
         <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px' }}>
             <h1 style={{ textAlign: 'center', color: 'white', marginBottom: '20px' }}>Product List</h1>
 
-            <form onSubmit={handleAddProduct} style={{
+            <form onSubmit={editingId ? handleUpdateProduct : handleAddProduct} style={{
                 background: '#fff',
                 padding: '20px',
                 borderRadius: '8px',
                 marginBottom: '30px',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-                <h2 style={{ color: '#333', marginTop: 0, marginBottom: '15px' }}>Add New Product</h2>
+                <h2 style={{ color: '#333', marginTop: 0, marginBottom: '15px' }}>
+                    {editingId ? 'Update Product' : 'Add New Product'}
+                </h2>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
@@ -140,23 +182,42 @@ function ProductList() {
                     </label>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={adding}
-                    style={{
-                        marginTop: '15px',
-                        padding: '10px 30px',
-                        background: adding ? '#ccc' : '#4caf50',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '16px',
-                        cursor: adding ? 'not-allowed' : 'pointer',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    {adding ? 'Adding...' : 'Add Product'}
-                </button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <button
+                        type="submit"
+                        disabled={adding}
+                        style={{
+                            padding: '10px 30px',
+                            background: adding ? '#ccc' : (editingId ? '#2196f3' : '#4caf50'),
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '16px',
+                            cursor: adding ? 'not-allowed' : 'pointer',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {adding ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update Product' : 'Add Product')}
+                    </button>
+                    {editingId && (
+                        <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            style={{
+                                padding: '10px 30px',
+                                background: '#999',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </div>
             </form>
 
             <div style={{
@@ -189,6 +250,22 @@ function ProductList() {
                         <div style={{ color: '#999', fontSize: '0.85rem', marginTop: '10px' }}>
                             Quantity: <strong style={{ color: '#333' }}>{product.quantity}</strong>
                         </div>
+                        <button
+                            onClick={() => handleEditClick(product)}
+                            style={{
+                                marginTop: '12px',
+                                padding: '6px 16px',
+                                background: '#2196f3',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Edit
+                        </button>
                     </div>
                 ))}
             </div>
