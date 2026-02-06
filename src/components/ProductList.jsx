@@ -87,6 +87,23 @@ function ProductList() {
         setNewProduct({ name: '', description: '', quantity: 0, isStock: true });
     };
 
+    const handleDeleteProduct = (id) => {
+        if (window.confirm('Chan chan xóa ?')) {
+            fetch(`https://68dd1a2f7cd1948060ac69a9.mockapi.io/product/${id}`, {
+                method: 'DELETE'
+            })
+                .then(() => {
+                    setProducts(products.filter(p => p.id !== id));
+                    if (editingId === id) {
+                        handleCancelEdit();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                });
+        }
+    };
+
     if (loading) {
         return (
             <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '20px', textAlign: 'center' }}>
@@ -250,22 +267,38 @@ function ProductList() {
                         <div style={{ color: '#999', fontSize: '0.85rem', marginTop: '10px' }}>
                             Quantity: <strong style={{ color: '#333' }}>{product.quantity}</strong>
                         </div>
-                        <button
-                            onClick={() => handleEditClick(product)}
-                            style={{
-                                marginTop: '12px',
-                                padding: '6px 16px',
-                                background: '#2196f3',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '4px',
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            Edit
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                            <button
+                                onClick={() => handleEditClick(product)}
+                                style={{
+                                    padding: '6px 16px',
+                                    background: '#2196f3',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleDeleteProduct(product.id)}
+                                style={{
+                                    padding: '6px 16px',
+                                    background: '#f44336',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
